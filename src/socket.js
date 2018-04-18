@@ -1,6 +1,7 @@
 const db = require('./db');
 
 
+
 const onSocketConnect = io => socket => {
 
 
@@ -19,9 +20,9 @@ const onSocketConnect = io => socket => {
   // TODO 3.2 Include information about the "fromUser" so the client can filter draw events from other users and only display events from the selected user
 
   // TODO 1.4 listen for draw action-type events (eg "DRAW_POINTS") from the socket and broadcast them to others sockets.
-  socket.on('DRAW_POINTS', data => {
-    socket.broadcast.emit('DRAW_POINTS', data);
-  })
+  socket.on('DRAW_POINTS', ({points, color}) => {
+    socket.broadcast.emit('DRAW_POINTS', {points, color});
+  });
 
 };
 
@@ -34,9 +35,7 @@ const connect = server => {
 
 
   // TODO 1.3 listen for new connections and use the provided "onSocketConnect" function
-  io.on('connection', socket => {
-    onSocketConnect(socket);
-  })
+  io.on('connect', onSocketConnect(io));
 }
 
 module.exports = connect;
