@@ -4,25 +4,36 @@ const db = require('./db');
 
 const onSocketConnect = io => socket => {
 
+  let logout;
+
 
 
   // TODO 2.1 Listen for login events (eg "LOGIN") from client and save the user using db.create(username, socket.id)
 
-
   // TODO 2.2 Prevent users from using an existing username using the "acknowledgement" from the client
-
+  socket.on('LOGIN', ({username}, login) => {
+      if (db.get(username)) {
+        if (typeof login === 'function') login(`${username} is taken.`);
+      } else {
+        logout = db.create(username, socket.id);
+        io.emit('UPDATE_USER_LIST', {users: db.all()});
+      }
+    });
 
   // TODO 2.3 Emit an update user list event (eg "UPDATE_USER_LIST") to all clients when there is a login event
   // TODO 2.4 Listen for "disconnect" events and remove the socket user from the users object (*hint: db.create(username, socket.id) returns the logout fn)
   // TODO 2.5 emit "UPDATE_USER_LIST" after user has been "logged out" and is removed from "users" object
-
+  socket.on('disconnect', () => {
+       if (typeof logout === 'function') logout();
+       io.emit('UPDATE_USER_LIST', {users: db.all()});
+     });
   // TODO 3.1 Check if a "toUser" is specified and only broadcast to that user
   // TODO 3.2 Include information about the "fromUser" so the client can filter draw events from other users and only display events from the selected user
 
   // TODO 1.4 listen for draw action-type events (eg "DRAW_POINTS") from the socket and broadcast them to others sockets.
   socket.on('DRAW_POINTS', ({points, color}) => {
-    socket.broadcast.emit('DRAW_POINTS', {points, color});
-  });
+       socket.broadcast.emit('DRAW_POINTS', {points, color});
+   });
 
 };
 
